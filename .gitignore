@@ -1,0 +1,4 @@
+theory/
+*.swp
+bin/
+kirkpatrick
