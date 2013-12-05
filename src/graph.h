@@ -5,40 +5,32 @@
 
 #include <boost/optional.hpp>
 
-#include "geom/primitives/point.h"
-
-namespace visualization {
-    class drawer_type;
-}
-
-namespace geom {
-    namespace structures {
-        class point_type;
-        class segment_type;
-    }
-}
-
-using geom::structures::point_type;
-using geom::structures::segment_type;
-using visualization::drawer_type;
-
-typedef std::vector<point_type> point_arr;
-typedef std::vector<segment_type> segment_arr;
+#include "util.h"
 
 struct graph_type {
-   void set_special_points(point_arr const& arr);
-   void add(point_type const& p);
-   void add(point_type const& p1, point_type const& p2);
-   void independent_set(size_t max_degree, point_arr&);
-   void neighbours(point_type const&, point_arr&);
+   graph_type(point_arr const& special_points);
+   void add(point_type const&);
+   void add_edge(segment_type const& e) { add_edge(e[0], e[1]); }
+   void add_edge(point_type const&, point_type const&);
+   void add_poly(point_arr const&);
+   segment_arr edges() const;
+   point_arr independent_set(size_t max_degree) const;
+   std::set<point_type> neighbours(point_type const& p) const { return _graph.at(p); }
+   void remove(point_type const&);
    void remove(point_arr const&);
-   std::vector<segment_type> edges() const;
-   void dump() const;
+   friend std::ostream& operator<<(std::ostream&, graph_type const&);
 private:
    std::map<point_type, std::set<point_type> > _graph;
    point_arr _special_points;
 };
 
-inline std::ostream& operator<<(std::ostream& ost, point_type const& p) {
-   return ost << "(" << p.x << ", " << p.y << ")";
+inline std::ostream& operator<<(std::ostream& ost, graph_type const& graph) {
+   for(auto el: graph._graph) {
+      ost << el.first << ":";
+      for(auto p2: el.second) {
+         ost << " " << p2;
+      }
+      ost << std::endl;
+   }
+   return ost;
 }

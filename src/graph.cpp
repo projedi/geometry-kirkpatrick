@@ -1,18 +1,17 @@
 #include "graph.h"
 
-#include "geom/primitives/point.h"
-#include "geom/primitives/segment.h"
-
-void graph_type::set_special_points(point_arr const& arr) {
-   _special_points = arr;
+graph_type::graph_type(point_arr const& special_points):
+   _special_points(special_points) {
+   add_poly(special_points);
 }
 
 void graph_type::add(point_type const& p) {
+   logger << "Adding point " << p << std::endl;
    _graph[p] = std::set<point_type>();
 }
 
-void graph_type::add(point_type const& p1, point_type const& p2) {
-   std::cerr << "Adding " << p1 << " " << p2 << std::endl;
+void graph_type::add_edge(point_type const& p1, point_type const& p2) {
+   logger << "Adding edge " << p1 << " <-> " << p2 << std::endl;
    if(_graph.find(p1) == _graph.end())
       throw std::logic_error("first point is not in graph");
    if(_graph.find(p2) == _graph.end())
@@ -21,33 +20,19 @@ void graph_type::add(point_type const& p1, point_type const& p2) {
    _graph[p2].insert(p1);
 }
 
-void graph_type::independent_set(size_t max_degree, point_arr& res) {
-   std::set<point_type> masked;
-   for(auto pt: _special_points) masked.insert(pt);
-   for(auto el: _graph) {
-      if(el.second.size() > max_degree) continue;
-      if(masked.find(el.first) != masked.end()) continue;
-      masked.insert(el.first);
-      res.push_back(el.first);
+void graph_type::add_poly(point_arr const& points) {
+   auto fst_point = points.begin();
+   add(*fst_point);
+   auto prev = fst_point;
+   for(auto it = fst_point + 1; it != points.end(); ++it, ++prev) {
+      add(*it);
+      add_edge(*prev, *it);
    }
+   add_edge(*prev, *fst_point);
 }
 
-void graph_type::neighbours(point_type const& p, point_arr& res) {
-   res.insert(res.begin(), _graph[p].begin(), _graph[p].end());
-}
-
-void graph_type::remove(point_arr const& pts) {
-   for(auto pt: pts) {
-      auto els = _graph[pt];
-      for(auto el: els) {
-         _graph[el].erase(pt);
-      }
-      _graph.erase(pt);
-   }
-}
-
-std::vector<segment_type> graph_type::edges() const {
-   std::vector<segment_type> res;
+segment_arr graph_type::edges() const {
+   segment_arr res;
    for(auto el: _graph) {
       auto p1 = el.first;
       for(auto p2: el.second) {
@@ -58,12 +43,26 @@ std::vector<segment_type> graph_type::edges() const {
    return res;
 }
 
-void graph_type::dump() const {
+point_arr graph_type::independent_set(size_t max_degree) const {
+   point_arr res;
+   std::set<point_type> masked;
+   for(auto pt: _special_points) masked.insert(pt);
    for(auto el: _graph) {
-      std::cerr << el.first << ":";
-      for(auto p2: el.second) {
-         std::cerr << " " << p2;
-      }
-      std::cerr << std::endl;
+      if(el.second.size() > max_degree) continue;
+      if(masked.find(el.first) != masked.end()) continue;
+      masked.insert(el.second.begin(), el.second.end());
+      res.push_back(el.first);
    }
+   return res;
+}
+
+void graph_type::remove(point_type const& pt) {
+   for(auto el: _graph[pt]) {
+      _graph[el].erase(pt);
+   }
+   _graph.erase(pt);
+}
+
+void graph_type::remove(point_arr const& pts) {
+   for(auto pt: pts) remove(pt);
 }

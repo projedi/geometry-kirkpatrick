@@ -24,11 +24,14 @@ INCLUDEPATH += src \
 
 HEADERS += src/graph.h \
            src/kirkpatrick.h \
+           src/triangle.h \
+           src/util.h \
            src/viewer.h
 
 SOURCES += src/graph.cpp \
            src/kirkpatrick.cpp \
            src/main.cpp \
+           src/triangle.cpp \
            src/viewer.cpp
 
 LIBS += -Lvisualization -lvisualization

@@ -9,16 +9,18 @@
 using geom::structures::point_type;
 
 struct kirkpatrick_viewer : visualization::viewer_adapter {
-   kirkpatrick_viewer(): _state(POLY_INPUT), _poly_complete(false), _query_hit(false) { }
-   void draw(visualization::drawer_type& drawer) const;
-   void print(visualization::printer_type& printer) const;
-   bool on_double_click(point_type const& pt);
+   kirkpatrick_viewer();
+   void draw(visualization::drawer_type&) const;
+   void print(visualization::printer_type&) const;
+   bool on_double_click(point_type const&);
    bool on_key(int key);
 private:
-   void draw_poly_input(visualization::drawer_type& drawer) const;
-   void draw_query(visualization::drawer_type& drawer) const;
+   void add_point(point_type const&);
+   void save();
+   void load();
 private:
-   enum viewer_state { POLY_INPUT, QUERY } _state;
+   enum class viewer_state { POLY_INPUT, QUERY } _state;
+   std::string _status;
    std::vector<point_type> _points;
    bool _poly_complete;
    // QUERY only

@@ -1,13 +1,23 @@
 #pragma once
 
-#include <vector>
+#include "graph.h"
+#include "util.h"
 
-class kirkpatrick_impl;
+namespace visualization {
+    struct drawer_type;
+}
+
+using visualization::drawer_type;
+
+struct triangle_type;
 
 struct kirkpatrick_type {
-   kirkpatrick_type(std::vector<geom::structures::point_type> const&);
-   bool query(geom::structures::point_type const&) const;
-   void draw(visualization::drawer_type& drawer) const;
+   kirkpatrick_type(point_arr const&);
+   bool query(point_type const&) const;
+   void draw(drawer_type& drawer) const;
 private:
-   std::shared_ptr<kirkpatrick_impl> _impl;
+   point_arr _outer_points;
+   graph_type _graph;
+   std::shared_ptr<triangle_type> _top_triangle;
+   std::vector<segment_type> _triangulation;
 };
